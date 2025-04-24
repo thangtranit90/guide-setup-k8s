@@ -132,6 +132,27 @@ echo "===== Step 3: Vo hieu hoa swap ====="
 sudo swapoff -a
 sudo sed -i '/swap/s/^/#/' /etc/fstab
 
+# Tao systemd service de vo hieu hoa swap sau khi reboot
+echo "Tao systemd service de vo hieu hoa swap sau khi reboot..."
+cat <<EOF | sudo tee /etc/systemd/system/disable-swap.service
+[Unit]
+Description=Disable swap
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c "swapoff -a"
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Kich hoat service
+sudo systemctl daemon-reload
+sudo systemctl enable disable-swap.service
+sudo systemctl start disable-swap.service
+
 # Step 4.1: Cai dat containerd
 echo "===== Step 4.1: Cai dat containerd ====="
 # Xoa phien ban containerd cu neu co
